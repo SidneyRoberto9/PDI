@@ -50,10 +50,10 @@ public class Main extends javax.swing.JFrame {
         tom = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1408, 608));
+        setMinimumSize(new java.awt.Dimension(1280, 608));
         setResizable(false);
 
-        jComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "None", "banda", "aumentoDeTonalidade", "grayScale", "grayScaleBanda", "negative", "binarizacao", "brilhoAditivo", "brilhoMultiplicativo", "brilhoAditivoY", "brilhoMultiplicativoY", "negativeY" }));
+        jComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "None", "banda", "aumentoDeTonalidade", "grayScale", "grayScaleBanda", "negative", "binarizacao", "brilhoAditivo", "brilhoMultiplicativo", "brilhoAditivoY", "brilhoMultiplicativoY", "negativeY", "media", "mediana", "convulacao" }));
         jComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBoxActionPerformed(evt);
@@ -225,6 +225,22 @@ public class Main extends javax.swing.JFrame {
               info.setText("<html><body>Aplica um Filtro na imagem onde <br>as suas cores seram invertidas<br>Nesse metodo utilizamos a Estutura YIQ</body></html>");
             tomtext.setEnabled(false);
             value.setEnabled(false);
+            
+        } else if (selectedItemStr == "media") {
+            info.setText("<html><body>Aplica um Filtro na imagem onde <br>os pixeis serão reduzidos a uma media do tamanaho de sua vizinhança, o value referece ao tamanho da vizinhança <br> Sempre use numeros impares</body></html>");
+            tomtext.setEnabled(false);
+            value.setEnabled(true);
+            
+        } else if (selectedItemStr == "mediana") {
+            info.setText("<html><body>Aplica um Filtro na imagem onde <br>os pixeis serão reduzidos a uma mediana do tamanaho de sua vizinhança, o value referece ao tamanho da vizinhança <br> Sempre use numeros impares</body></html>");
+            tomtext.setEnabled(false);
+            value.setEnabled(true);
+            
+         } else if (selectedItemStr == "convulacao") {
+            info.setText("<html><body>Aplica um Filtro na imagem Convulacional escolha o filtro:<br>0 - horizontal <br>1 - vertical <br>2 - linhasOeste  <br>3 - laplaciano </body></html>");
+            tomtext.setEnabled(false);
+            value.setEnabled(true);
+            
         } else {
             info.setText(" Campo Invalido, por favor Selecione Outro...");
             tomtext.setEnabled(false);
@@ -300,6 +316,35 @@ public class Main extends javax.swing.JFrame {
                 
             } else if (selectedItemStr == "negativeY") {
                 imagemSaida = filter.yiq2RGB(filter.negativeY(filter.RGB2yiq(imagem)));
+                
+            } else if (selectedItemStr == "media") {
+               imagemSaida = filter.media(imagem, Integer.parseInt(value.getText()));
+                
+            } else if (selectedItemStr == "mediana") {
+               imagemSaida = filter.mediana(imagem, Integer.parseInt(value.getText()));    
+            
+            } else if (selectedItemStr == "convulacao") {
+                int valuer = Integer.parseInt(value.getText());
+                
+                double[] horizontal = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+                double[] vertical = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+                double[] linhasOeste = {1, 1, -1, 1, -2, -1, 1, 1, -1};
+                double[] laplaciano = {0, -1, 0, -1, 4, -1, 0, -1, 0};
+                
+                if(valuer == 0){
+                    imagemSaida = filter.convolucao(imagem, horizontal);
+                
+                } else if (valuer == 1){
+                    imagemSaida = filter.convolucao(imagem, vertical);
+                    
+                } else if (valuer == 2){
+                    imagemSaida = filter.convolucao(imagem, linhasOeste);
+                    
+                } else if (valuer == 3){
+                    imagemSaida = filter.convolucao(imagem, laplaciano);
+                    
+                }
+
             
             } else if (selectedItemStr == "None"){
                 imagemSaida = imagem;

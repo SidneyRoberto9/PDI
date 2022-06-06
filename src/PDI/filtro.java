@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 /**
  *
@@ -378,5 +379,134 @@ public class filtro {
             }
         }
         return yiq;
+    }
+    
+    public BufferedImage media (BufferedImage imgOriginal, int tamVizinhanca) {
+        int largura = imgOriginal.getWidth(); 
+        int altura = imgOriginal.getHeight(); 
+        
+        BufferedImage imgFiltrada = new BufferedImage(largura, altura, BufferedImage.TYPE_INT_RGB);
+
+        int valorRef = tamVizinhanca/2;
+        int qut = tamVizinhanca * tamVizinhanca;
+
+        for (int linha = valorRef; linha < altura - valorRef; linha++) {
+            for (int coluna = valorRef; coluna < largura - valorRef; coluna++) {
+                int somaRed = 0;
+                int somaGreen = 0;
+                int somaBlue = 0;
+
+                for (int i = - valorRef; i <= valorRef; i++) { 
+                    for (int j = - valorRef; j <= valorRef; j++) {
+                        Color cor = new Color(imgOriginal.getRGB(coluna + j, linha + i));
+                        somaRed += cor.getRed();
+                        somaGreen += cor.getGreen();
+                        somaBlue += cor.getBlue();
+                    }
+                }
+
+                Color novaCor = new Color(somaRed/qut, somaGreen/qut, somaBlue/qut);
+                imgFiltrada.setRGB(coluna, linha, novaCor.getRGB());
+            }
+        }
+        return imgFiltrada;
+    }
+
+    public BufferedImage mediana (BufferedImage imgOriginal, int tamVizinhanca) {   
+        int largura = imgOriginal.getWidth(); 
+        int altura = imgOriginal.getHeight(); 
+        
+        BufferedImage imgFiltrada = new BufferedImage(largura, altura, BufferedImage.TYPE_INT_RGB);
+
+        int valorRef = tamVizinhanca/2;
+
+        for (int linha = valorRef; linha < altura - valorRef; linha++) {
+            for (int coluna = valorRef; coluna < largura - valorRef; coluna++) {
+                int[] valorRed = new int [tamVizinhanca*tamVizinhanca];
+                int[] ValorGreen = new int [tamVizinhanca*tamVizinhanca];
+                int[] valorBlue = new int [tamVizinhanca*tamVizinhanca];
+                int posicao = 0;
+
+                for (int i = - valorRef; i <= valorRef; i++) { 
+                    for (int j = - valorRef; j <= valorRef; j++) {
+                        Color cor = new Color(imgOriginal.getRGB(coluna + j, linha + i));
+                        valorRed[posicao] += cor.getRed();
+                        ValorGreen[posicao] += cor.getGreen();
+                        valorBlue[posicao] += cor.getBlue();
+                        posicao++;
+                    }
+                }
+
+                Arrays.sort(valorRed);
+                Arrays.sort(ValorGreen);
+                Arrays.sort(valorBlue);
+                int medianaRed = valorRed[(valorRed.length-1)/2];
+                int medianaGreen = ValorGreen[(ValorGreen.length-1)/2];
+                int medianaBlue = valorBlue[(valorBlue.length-1)/2];
+
+                Color novaCor = new Color(medianaRed, medianaGreen, medianaBlue);
+                imgFiltrada.setRGB(coluna, linha, novaCor.getRGB());
+            }
+        }
+        return imgFiltrada;
+    }
+
+    public  BufferedImage convolucao (BufferedImage imgOriginal, double[] kernel) {
+        int largura = imgOriginal.getWidth();
+        int altura = imgOriginal.getHeight();
+
+        BufferedImage imgFiltrada = new BufferedImage(largura, altura, BufferedImage.TYPE_INT_RGB);
+
+        int tamVizinhanca = (int)Math.sqrt(kernel.length);
+        int valorRef = tamVizinhanca/2;
+
+        if (tamVizinhanca == 3) {
+
+            for (int linha = valorRef; linha < altura - valorRef; linha++) {
+                for (int coluna = valorRef; coluna < largura - valorRef; coluna++) {
+                    double soma = 0;
+                    int posicao = 0;
+
+                    for (int i = -valorRef; i <= valorRef; i++) { 
+                        for (int j = -valorRef; j <= valorRef; j++) {
+                            Color cor = new Color(imgOriginal.getRGB(coluna + j, linha + i));
+                            int red = cor.getRed();
+                            soma += (double)red * kernel[posicao];
+                            posicao++;
+                        }
+                    }
+                    int result = (int)soma;
+                    if (result < 0) result = 0;
+                    if (result > 255) result = 255;
+                    Color novaCor = new Color(result, result, result);
+                    imgFiltrada.setRGB(coluna, linha, novaCor.getRGB());
+                }
+            }
+        }
+
+        else {
+
+            for (int linha = valorRef; linha < altura - valorRef; linha++) {
+                for (int coluna = valorRef; coluna < largura - valorRef; coluna++) {
+                    int soma = 0;
+                    int posicao = 0;
+
+                    for (int i = -valorRef; i <= valorRef; i++) { // linha vizinhança
+                        for (int j = -valorRef; j <= valorRef; j++) {
+                            Color cor = new Color(imgOriginal.getRGB(coluna + j, linha + i));
+                            int red = cor.getRed();
+                            soma += (double)red * (kernel[posicao]/256);
+                            posicao++;
+                        }
+                    }
+                    int result = (int)soma;
+                    if (result < 0) result = 0;
+                    if (result > 255) result = 255;
+                    Color novaCor = new Color(result, result, result);
+                    imgFiltrada.setRGB(coluna, linha, novaCor.getRGB());
+                }
+            }
+        }
+        return imgFiltrada;
     }
 }
